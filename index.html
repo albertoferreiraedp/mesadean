@@ -1117,12 +1117,15 @@ try{
 /* Fornecedores de mapa, por ordem de preferência. Todos gratuitos e sem chave.
    Se um falhar (rede, política ou bloqueio), passa automaticamente ao seguinte. */
 const FORNECEDORES = [
+  { nome:"Esri Light Gray",
+    url:"https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    opts:{ attribution:'Tiles &copy; Esri', maxZoom:19, maxNativeZoom:16 } },
+  { nome:"Esri Street",
+    url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    opts:{ attribution:'Tiles &copy; Esri', maxZoom:19 } },
   { nome:"OpenStreetMap",
     url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     opts:{ attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom:19 } },
-  { nome:"Esri",
-    url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
-    opts:{ attribution:'Tiles &copy; Esri', maxZoom:19 } },
   { nome:"OSM DE",
     url:"https://tile.openstreetmap.de/{z}/{x}/{y}.png",
     opts:{ attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom:18 } }
@@ -1672,7 +1675,7 @@ function recomecar(){
 if($("brand")) $("brand").addEventListener("click", recomecar);
 
 /* ---------- carimbo de versão ---------- */
-const VERSAO = "1.4.1";
+const VERSAO = "1.4.2";
 function carimbo(){ if($("ver")) $("ver").textContent = "v" + VERSAO; }
 carimbo();
 
