@@ -1114,14 +1114,36 @@ try{
   map = mapaFalso();
   semMapa(e.message);
 }
-if(MAP_OK){
+/* Fornecedores de mapa, por ordem de preferência. Todos gratuitos e sem chave.
+   Se um falhar (rede, política ou bloqueio), passa automaticamente ao seguinte. */
+const FORNECEDORES = [
+  { nome:"OpenStreetMap",
+    url:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    opts:{ attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom:19 } },
+  { nome:"Esri",
+    url:"https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+    opts:{ attribution:'Tiles &copy; Esri', maxZoom:19 } },
+  { nome:"OSM DE",
+    url:"https://tile.openstreetmap.de/{z}/{x}/{y}.png",
+    opts:{ attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom:18 } }
+];
+let camadaBase = null, fornecedorAtual = -1;
+function usarFornecedor(i){
+  if(!MAP_OK || i >= FORNECEDORES.length) return;
+  const f = FORNECEDORES[i];
   try{
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{
-      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains:"abcd", maxZoom:19
-    }).addTo(map);
-  }catch(e){ console.warn("tiles indisponíveis:", e.message); }   // pins continuam a funcionar
+    if(camadaBase){ map.removeLayer(camadaBase); camadaBase = null; }
+    let falhas = 0, trocou = false;
+    camadaBase = L.tileLayer(f.url, f.opts);
+    camadaBase.on("tileerror", ()=>{                  // fornecedor em baixo: passa ao seguinte
+      if(trocou) return;
+      if(++falhas >= 6){ trocou = true; usarFornecedor(i+1); }
+    });
+    camadaBase.addTo(map);
+    fornecedorAtual = i;
+  }catch(e){ console.warn("tiles ("+f.nome+"):", e.message); usarFornecedor(i+1); }
 }
+usarFornecedor(0);
 if(!precise && MAP_OK){
   const note = L.DomUtil.create("div","", $("map"));
   note.style.cssText="position:absolute;bottom:0;left:0;z-index:500;font-size:.66rem;color:#3A424C;background:rgba(255,255,255,.85);padding:3px 8px;border-top-right-radius:8px";
@@ -1650,7 +1672,7 @@ function recomecar(){
 if($("brand")) $("brand").addEventListener("click", recomecar);
 
 /* ---------- carimbo de versão ---------- */
-const VERSAO = "1.4.0";
+const VERSAO = "1.4.1";
 function carimbo(){ if($("ver")) $("ver").textContent = "v" + VERSAO; }
 carimbo();
 
