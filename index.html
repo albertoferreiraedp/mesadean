@@ -1967,6 +1967,17 @@ function aplicarCorrecoes(list){
   if(n) buildControls();
   return n;
 }
+/* Nomes de curadores escritos de forma diferente ao sugerir/avaliar são unificados aqui. */
+const CURADORES = { "alberto l":"Alberto LF", "alberto lousada":"Alberto LF", "alberto":"Alberto LF" };
+function normRec(v){
+  const s = String(v||"").trim();
+  if(!s) return s;
+  const k = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  if(CURADORES[k]) return CURADORES[k];
+  const conhecido = Object.keys(HEX).find(n =>
+    n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"") === k);
+  return conhecido || s;
+}
 function mergeExtras(list){
   if(!Array.isArray(list) || !list.length) return 0;
   const idx = new Map(DATA.map(d=>[d.nome.toLowerCase(), d]));
@@ -1979,7 +1990,7 @@ function mergeExtras(list){
       Object.assign(ja, {                        // provisório: dados reais do Google mandam
         morada:String(x.morada||ja.morada), zona:String(x.zona||ja.zona),
         categoria:String(x.categoria||ja.categoria), familia:String(x.familia||ja.familia),
-        rec:String(x.rec||ja.rec), rating:Number(x.rating)||ja.rating,
+        rec:normRec(x.rec)||ja.rec, rating:Number(x.rating)||ja.rating,
         preco:String(x.preco||ja.preco), banda:Number(x.banda)||ja.banda,
         lat:Number(x.lat), lng:Number(x.lng), exato:true,
         gmaps:x.gmaps||ja.gmaps, img:x.img||ja.img, provisorio:false
@@ -1991,7 +2002,7 @@ function mergeExtras(list){
     idx.set(String(x.nome).toLowerCase(), x);
     const d = {
       nome:String(x.nome), morada:String(x.morada||""), zona:String(x.zona||"Lisboa"),
-      categoria:String(x.categoria||""), familia:String(x.familia||"Outras"), rec:String(x.rec||""),
+      categoria:String(x.categoria||""), familia:String(x.familia||"Outras"), rec:normRec(x.rec),
       rating:Number(x.rating)||0, preco:String(x.preco||"15 € – 30 €"), banda:Number(x.banda)||2,
       lat:Number(x.lat), lng:Number(x.lng), exato:true,
       gmaps:x.gmaps||null, img:x.img||null, novo:true
@@ -2071,7 +2082,7 @@ function recomecar(){
 if($("brand")) $("brand").addEventListener("click", recomecar);
 
 /* ---------- carimbo de versão ---------- */
-const VERSAO = "1.5.0";
+const VERSAO = "1.5.1";
 function carimbo(){ if($("ver")) $("ver").textContent = "v" + VERSAO; }
 carimbo();
 
